@@ -34,15 +34,15 @@ call print
 mov si, offset player1NamePrompt
 call print
 mov si, offset player1Name
-mov cx,20
-mov ah,01h
-call input
+mov cx,20                             ;not sure if i need
+mov ah,01h                            ;not sure if i need
+call input                            ;will this work?
 mov si, offset player2NamePrompt
 call print
 mov si, offset player2Name
-mov cx,20
-mov ah,01h
-call input
+mov cx,20                             ;not sure if i need
+mov ah,01h                            ;not sure if i need
+call input                            ;will this work?
 
 
 print:			 ;pushes the letters into the stack
