@@ -380,7 +380,53 @@ pop ax
 ret
 
 checkWin:
+push ax
 
+mov al,led0
+cmp al,3
+je combo2
+
+mov ah, led1
+cmp ah,3
+je combo2
+
+cmp ah,al
+jne combo2
+
+mov ah,led2
+cmp ah,3
+je combo2
+
+cmp ah,al
+jne combo2
+
+jmp celeb
+
+combo2:
+mov al,led3
+cmp al,3
+je combo3
+
+mov ah, led4
+cmp ah,3
+je combo3
+
+cmp ah,al
+jne combo3
+
+mov ah,led5
+cmp ah,3
+je combo3
+
+cmp ah,al
+jne combo3
+
+jmp celeb
+
+combo3:
+
+
+celeb:
 call celebrate
 ret
 
