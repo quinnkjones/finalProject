@@ -13,6 +13,10 @@ led5 db 3
 led6 db 3
 led7 db 3
 led8 db 3
+col db ?
+row db ?
+winningLEDS dw 3 dup(?)
+
 activeP db 0
 
 instruction db "The game of Tic Tac Toe: Take turns making moves on the board by pushing the row of the space and then the column.$"
@@ -48,16 +52,16 @@ MOV DX, 143H	; Place I/O chip into direction mode
 MOV AL, 2	
 OUT DX, AL 
 
-MOV DX, 140H	
+MOV DX, 140H	;Port A outputs to LED's b0 green 0 b1 is yellow 0 to b6 is green 3 and b7 is yellow 3
 MOV AL, 0ffH
 OUT DX, AL
 
-MOV DX, 141H
-MOV AL, 0feH
+MOV DX, 141H 	;Port B outputs to LED's b0 is green 4 to b7 is yellow 7
+MOV AL, 0ffH
 OUT DX, AL
 
 mov dx,142h
-mov al, 00
+mov al, 03h ; portC b0 and b1 output to box 8  b2-b7: input buttons b2,b3,b4= rows  b5,b6,b7=columns
 out dx, al
 
 MOV DX, 143H	; Place I/O chip into operation mode
@@ -66,17 +70,20 @@ out dx,al
 
 mov si, offset instruction
 call print
-mov si, offset Yellow
-call print
-
-mov si, offset YellowStorage
-call keyInput
 
 mov si, offset Green
 call print
 
 mov si, offset GreenStorage
 call keyInput
+
+mov si, offset Yellow
+call print
+
+mov si, offset YellowStorage
+call keyInput
+
+
 
 mov activeP, 0
 mainloop:
@@ -88,19 +95,34 @@ mov al,activeP
 cmp al,0
 je pl1
 
-mov si, offset GreenStorage
+mov si,offset YellowStorage
 jmp pr
 
 pl1:
-mov si,offset YellowStorage
+mov si, offset GreenStorage
 
 pr:
 call print
 
+call bInput
 
+cmp al,0
+je slg
 
+slg:
+call setLEDG
+jmp outputB
 
+call setLEDY
 
+outputB:
+call outputBoard
+
+call checkWin
+
+not al
+mov activeP,al
+jmp mainloop
 
 
 
@@ -156,6 +178,215 @@ mov al,"$"
 mov [si],al
 pop ax
 pop cx
+ret
+
+bInput:
+push dx
+push ax
+mov dx,142h
+rowloop:
+in al,dx
+and al,0ffh
+cmp al,11111000b ;lowest row button
+jne secondcmp
+
+mov row,0
+jmp colloop
+
+secondcmp:
+cmp al,11110100b
+jne thirdcmp
+
+mov row,1
+jmp colloop
+
+thirdcmp:
+cmp al,11101100b
+jne rowloop
+
+mov row,2
+jmp colloop
+
+
+colloop:
+in al,dx
+and al,0ffh
+cmp al,11011100b ;lowest row button
+jne secondcmpc
+
+mov col,0
+call checkValid
+jmp return
+
+
+secondcmpc:
+cmp al,10111100b
+jne thirdcmpc
+
+mov col,1
+call checkValid
+jmp return
+
+thirdcmpc:
+cmp al,01111100b
+jne colloop
+
+mov col,2
+call checkValid
+
+
+return:
+pop ax
+pop dx
+ret
+;SI holds offset of LED that should change
+
+checkValid:
+push ax
+mov ah,row
+mov al,col
+
+cmp ah,0
+je row0
+
+cmp ah,1
+je row1
+
+cmp ah,2 
+je row2
+
+row0:
+	cmp al,0
+	je l0
+	
+	cmp al,1
+	je l1
+	
+	cmp al,2
+	je l2
+	
+row1:
+	cmp al,0
+	je l3
+	
+	cmp al,1
+	je l4
+	
+	cmp al,2
+	je l5
+
+row2:
+	cmp al,0
+	je l6
+	
+	cmp al,1
+	je l7
+	
+	cmp al,2
+	je l8
+	
+l0:
+	mov si, offset led0
+	jmp end_check
+
+l1:
+	mov si, offset led1
+	jmp end_check
+	
+l2:
+	mov si, offset led2
+	jmp end_check
+	
+l3:
+	mov si, offset led3
+	jmp end_check
+	
+l4:
+	mov si, offset led4
+	jmp end_check
+
+l5:
+	mov si, offset led5
+	jmp end_check
+	
+l6:
+	mov si, offset led6
+	jmp end_check
+l7:
+	mov si, offset led7
+	jmp end_check
+l8:
+	mov si, offset led8
+	jmp end_check
+	
+end_check:
+cmp [si],3
+je returnCheck
+;this is where we would put a reentry prompt
+call bInput
+returnCheck:
+pop ax
+ret
+
+setLEDG:
+mov [SI], 00000010b
+ret
+
+setLEDY:
+mov [SI], 00000001b
+ret
+
+outputBoard:
+push ax
+push bx
+push dx
+
+mov ax, 0
+mov al, led0
+mov bl,led1
+shl bl,2
+or al,bl
+mov bl, led2
+shl bl,4
+or al,bl
+mov bl,led3
+shl bl,6
+or al,bl
+mov dx, 140h
+out dx,al
+
+mov ax, 0
+mov al, led4
+mov bl,led5
+shl bl,2
+or al,bl
+mov bl, led6
+shl bl,4
+or al,bl
+mov bl,led7
+shl bl,6
+or al,bl
+mov dx, 141h
+out dx,al
+
+mov ax,0
+mov al,led8
+mov dx,142h
+out dx,al
+
+pop dx
+pop bx
+pop ax
+ret
+
+checkWin:
+
+call celebrate
+ret
+
+celebrate:
+
+jmp end_prog
 ret
 
 ;code end
