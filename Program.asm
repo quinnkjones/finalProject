@@ -538,27 +538,28 @@ jmp celeb
 combo8:
 mov al,led2
 cmp al,3
-je 				;binput?
+je checkwinR				;binput?
 
 mov ah, led4
 cmp ah,3
-je 				;?
+je checkwinR			;?
 
 cmp ah,al
-jne 				;?
+jne checkwinR			;?
 
 mov ah,led6
 cmp ah,3
-je 				;?
+je checkwinR ;?
 
 cmp ah,al
-jne 				;?
+jne checkwinR				;?
 
 jmp celeb
 
 
 celeb:
 call celebrate
+checkwinR:
 ret
 
 celebrate:
