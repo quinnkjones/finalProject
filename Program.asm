@@ -23,9 +23,12 @@ instruction db "The game of Tic Tac Toe: Take turns making moves on the board by
 turn db "It's your turn$"
 Yellow db "Yellow player enter your username: $"
 Green db "Green player enter your username: $"
-
 GreenStorage db 30 dup(?)
 YellowStorage db 30 dup(?)
+
+debugP db "rows over$"
+debugp2 db "column over$"
+
 
 var db "w"
 data ends
@@ -86,6 +89,7 @@ call keyInput
 
 
 mov activeP, 0
+call outputBoard
 mainloop:
 
 mov si, offset turn
@@ -185,23 +189,28 @@ push dx
 push ax
 mov dx,142h
 rowloop:
+mov si,offset debugP
+call print
 in al,dx
-and al,0ffh
-cmp al,11111000b ;lowest row button
+and ax,0ffh
+mov ah,0
+shr ax,1
+shr ax,1
+cmp al,00111110b ;lowest row button
 jne secondcmp
 
 mov row,0
 jmp colloop
 
 secondcmp:
-cmp al,11110100b
+cmp al,00111101b
 jne thirdcmp
 
 mov row,1
 jmp colloop
 
 thirdcmp:
-cmp al,11101100b
+cmp al,00111011b
 jne rowloop
 
 mov row,2
@@ -209,9 +218,13 @@ jmp colloop
 
 
 colloop:
+
 in al,dx
 and al,0ffh
-cmp al,11011100b ;lowest row button
+mov ah,0
+shr ax,1
+shr ax,1
+cmp al,00110111b ;lowest row button
 jne secondcmpc
 
 mov col,0
@@ -220,7 +233,7 @@ jmp return
 
 
 secondcmpc:
-cmp al,10111100b
+cmp al,00101111b
 jne thirdcmpc
 
 mov col,1
@@ -228,7 +241,7 @@ call checkValid
 jmp return
 
 thirdcmpc:
-cmp al,01111100b
+cmp al,00011111b
 jne colloop
 
 mov col,2
@@ -243,6 +256,8 @@ ret
 
 checkValid:
 push ax
+mov si, offset debugp2
+call print
 mov ah,row
 mov al,col
 
@@ -320,7 +335,9 @@ l8:
 	jmp end_check
 	
 end_check:
-cmp [si],3
+mov al,[si]
+mov ah,3
+cmp ah,al
 je returnCheck
 ;this is where we would put a reentry prompt
 call bInput
@@ -329,11 +346,17 @@ pop ax
 ret
 
 setLEDG:
-mov [SI], 00000010b
+push ax
+mov al,00000010b
+mov [SI], al
+pop ax
 ret
 
 setLEDY:
-mov [SI], 00000001b
+push ax
+mov al,  00000001b
+mov [SI],al
+pop ax 
 ret
 
 outputBoard:
@@ -343,14 +366,23 @@ push dx
 
 mov ax, 0
 mov al, led0
-mov bl,led1
-shl bl,2
+mov bl, led1
+shl bx,1
+shl bx,1
 or al,bl
 mov bl, led2
-shl bl,4
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
 or al,bl
 mov bl,led3
-shl bl,6
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
 or al,bl
 mov dx, 140h
 out dx,al
@@ -358,13 +390,22 @@ out dx,al
 mov ax, 0
 mov al, led4
 mov bl,led5
-shl bl,2
+shl bx,1
+shl bx,1
 or al,bl
 mov bl, led6
-shl bl,4
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
 or al,bl
 mov bl,led7
-shl bl,6
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
+shl bx,1
 or al,bl
 mov dx, 141h
 out dx,al
