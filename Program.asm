@@ -402,6 +402,7 @@ jne combo2
 
 jmp celeb
 
+
 combo2:
 mov al,led3
 cmp al,3
@@ -423,7 +424,137 @@ jne combo3
 
 jmp celeb
 
+
 combo3:
+mov al,led6
+cmp al,3
+je combo4
+
+mov ah, led7
+cmp ah,3
+je combo4
+
+cmp ah,al
+jne combo4
+
+mov ah,led8
+cmp ah,3
+je combo4
+
+cmp ah,al
+jne combo4
+
+jmp celeb
+
+
+combo4:
+mov al,led0
+cmp al,3
+je combo5
+
+mov ah, led3
+cmp ah,3
+je combo5
+
+cmp ah,al
+jne combo5
+
+mov ah,led6
+cmp ah,3
+je combo5
+
+cmp ah,al
+jne combo5
+
+jmp celeb
+
+
+combo5:
+mov al,led1
+cmp al,3
+je combo6
+
+mov ah, led4
+cmp ah,3
+je combo6
+
+cmp ah,al
+jne combo6
+
+mov ah,led6
+cmp ah,3
+je combo6
+
+cmp ah,al
+jne combo6
+
+jmp celeb
+
+
+combo6:
+mov al,led2
+cmp al,3
+je combo7
+
+mov ah, led5
+cmp ah,3
+je combo7
+
+cmp ah,al
+jne combo7
+
+mov ah,led8
+cmp ah,3
+je combo7
+
+cmp ah,al
+jne combo7
+
+jmp celeb
+
+
+combo7:
+mov al,led0
+cmp al,3
+je combo8
+
+mov ah, led4
+cmp ah,3
+je combo8
+
+cmp ah,al
+jne combo8
+
+mov ah,led8
+cmp ah,3
+je combo8
+
+cmp ah,al
+jne combo8
+
+jmp celeb
+
+
+combo8:
+mov al,led2
+cmp al,3
+je 				;binput?
+
+mov ah, led4
+cmp ah,3
+je 				;?
+
+cmp ah,al
+jne 				;?
+
+mov ah,led6
+cmp ah,3
+je 				;?
+
+cmp ah,al
+jne 				;?
+
+jmp celeb
 
 
 celeb:
