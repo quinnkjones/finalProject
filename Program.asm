@@ -122,7 +122,10 @@ call setLEDY
 outputB:
 call outputBoard
 
-call checkWins
+call checkWin
+
+mov si, offset debugp2
+call print
 
 not al
 mov activeP,al
@@ -273,7 +276,7 @@ ret
 
 checkValid:
 push ax
-mov si, offset debugp2
+
 call print
 mov ah,row
 mov al,col
