@@ -26,8 +26,7 @@ Green db "Green player enter your username: $"
 GreenStorage db 30 dup(?)
 YellowStorage db 30 dup(?)
 
-debugP db "rows over$"
-debugp2 db "column over$"
+win db "win is you$"
 
 
 var db "w"
@@ -51,15 +50,15 @@ mov sp,offset stacktop
 ;begin code 
 
 ;setup ports
-MOV DX, 143H	; Place I/O chip into direction mode
-MOV AL, 2	
+MOV DX, 143H        ; Place I/O chip into direction mode
+MOV AL, 2        
 OUT DX, AL 
 
-MOV DX, 140H	;Port A outputs to LED's b0 green 0 b1 is yellow 0 to b6 is green 3 and b7 is yellow 3
+MOV DX, 140H        ;Port A outputs to LED's b0 green 0 b1 is yellow 0 to b6 is green 3 and b7 is yellow 3
 MOV AL, 0ffH
 OUT DX, AL
 
-MOV DX, 141H 	;Port B outputs to LED's b0 is green 4 to b7 is yellow 7
+MOV DX, 141H         ;Port B outputs to LED's b0 is green 4 to b7 is yellow 7
 MOV AL, 0ffH
 OUT DX, AL
 
@@ -67,7 +66,7 @@ mov dx,142h
 mov al, 03h ; portC b0 and b1 output to box 8  b2-b7: input buttons b2,b3,b4= rows  b5,b6,b7=columns
 out dx, al
 
-MOV DX, 143H	; Place I/O chip into operation mode
+MOV DX, 143H        ; Place I/O chip into operation mode
 MOV AL, 3
 out dx,al
 
@@ -110,23 +109,21 @@ call print
 
 call bInput
 
+mov al,activeP
 cmp al,0
 je slg
 
-slg:
-call setLEDG
+call setLEDY
 jmp outputB
 
-call setLEDY
-
+slg:
+call setLEDG
 outputB:
 call outputBoard
 
 call checkWin
 
-mov si, offset debugp2
-call print
-
+mov al,activeP
 not al
 mov activeP,al
 jmp mainloop
@@ -201,9 +198,9 @@ shr ax,1
 mov ah,2
 
 mov dl,al
-int 21h
+;int 21h
 mov dl," "
-int 21h
+;int 21h
 mov dx,142h
 cmp al,3eh ;lowest row button
 jne secondcmp
@@ -239,9 +236,9 @@ mov ah,2
 
 
 mov dl,al
-int 21h
+;int 21h
 mov dl," "
-int 21h
+;int 21h
 mov dx,142h
 
 cmp al,37h ;lowest row button
@@ -291,69 +288,69 @@ cmp ah,2
 je row2
 
 row0:
-	cmp al,0
-	je l0
-	
-	cmp al,1
-	je l1
-	
-	cmp al,2
-	je l2
-	
+        cmp al,0
+        je l0
+        
+        cmp al,1
+        je l1
+        
+        cmp al,2
+        je l2
+        
 row1:
-	cmp al,0
-	je l3
-	
-	cmp al,1
-	je l4
-	
-	cmp al,2
-	je l5
+        cmp al,0
+        je l3
+        
+        cmp al,1
+        je l4
+        
+        cmp al,2
+        je l5
 
 row2:
-	cmp al,0
-	je l6
-	
-	cmp al,1
-	je l7
-	
-	cmp al,2
-	je l8
-	
+        cmp al,0
+        je l6
+        
+        cmp al,1
+        je l7
+        
+        cmp al,2
+        je l8
+        
 l0:
-	mov si, offset led0
-	jmp end_check
+        mov si, offset led0
+        jmp end_check
 
 l1:
-	mov si, offset led1
-	jmp end_check
-	
+        mov si, offset led1
+        jmp end_check
+        
 l2:
-	mov si, offset led2
-	jmp end_check
-	
+        mov si, offset led2
+        jmp end_check
+        
 l3:
-	mov si, offset led3
-	jmp end_check
-	
+        mov si, offset led3
+        jmp end_check
+        
 l4:
-	mov si, offset led4
-	jmp end_check
+        mov si, offset led4
+        jmp end_check
 
 l5:
-	mov si, offset led5
-	jmp end_check
-	
+        mov si, offset led5
+        jmp end_check
+        
 l6:
-	mov si, offset led6
-	jmp end_check
+        mov si, offset led6
+        jmp end_check
 l7:
-	mov si, offset led7
-	jmp end_check
+        mov si, offset led7
+        jmp end_check
 l8:
-	mov si, offset led8
-	jmp end_check
-	
+        mov si, offset led8
+        jmp end_check
+        
 end_check:
 mov al,[si]
 mov ah,3
@@ -542,7 +539,7 @@ je combo6
 cmp ah,al
 jne combo6
 
-mov ah,led6
+mov ah,led7
 cmp ah,3
 je combo6
 
@@ -599,21 +596,21 @@ jmp celeb
 combo8:
 mov al,led2
 cmp al,3
-je checkwinR				;binput?
+je checkwinR                                ;binput?
 
 mov ah, led4
 cmp ah,3
-je checkwinR			;?
+je checkwinR                        ;?
 
 cmp ah,al
-jne checkwinR			;?
+jne checkwinR                        ;?
 
 mov ah,led6
 cmp ah,3
 je checkwinR ;?
 
 cmp ah,al
-jne checkwinR				;?
+jne checkwinR                                ;?
 
 jmp celeb
 
@@ -621,9 +618,20 @@ jmp celeb
 celeb:
 call celebrate
 checkwinR:
+pop ax
 ret
 
 celebrate:
+mov si,offset win
+call print
+
+mov cx,50
+Loopy:
+mov al,led0
+not led0
+mov led0,al
+call outputBoard
+loop Loopy
 
 jmp end_prog
 ret
