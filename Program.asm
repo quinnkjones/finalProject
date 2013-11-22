@@ -15,8 +15,8 @@ led7 db 3
 led8 db 3
 col db ?
 row db ?
-winningLEDS dw 3 dup(?)
-
+winningCombo db ?
+turncount db 0
 activeP db 0
 
 instruction db "The game of Tic Tac Toe: Take turns making moves on the board by pushing the row of the space and then the column.$"
@@ -25,8 +25,10 @@ Yellow db "Yellow player enter your username: $"
 Green db "Green player enter your username: $"
 GreenStorage db 30 dup(?)
 YellowStorage db 30 dup(?)
+catmessage db "T'was a Draw"
+filledPrompt db "Space already taken$"
 
-win db "win is you$"
+win db "win is you:$"
 
 
 var db "w"
@@ -70,6 +72,28 @@ MOV DX, 143H        ; Place I/O chip into operation mode
 MOV AL, 3
 out dx,al
 
+beginPlay:
+mov led0,0
+mov led1,0
+mov led2,0
+mov led3,0
+mov led4,0
+mov led5,0
+mov led6,0
+mov led7,0
+mov led8,0
+call outputBoard
+mov led0,3
+mov led1,3
+mov led2,3
+mov led3,3
+mov led4,3
+mov led5,3
+mov led6,3
+mov led7,3
+mov led8,3
+mov turncount, 0
+
 mov si, offset instruction
 call print
 
@@ -109,26 +133,29 @@ call print
 
 call bInput
 
-mov al,activeP
-cmp al,0
-je slg
+call SetPlayer
 
-call setLEDY
-jmp outputB
-
-slg:
-call setLEDG
-outputB:
 call outputBoard
 
+mov al,turncount
+inc al
+mov turncount, al
+
 call checkWin
+
+mov turncount,al
+cmp al,9
+je draw
 
 mov al,activeP
 not al
 mov activeP,al
 jmp mainloop
 
-
+draw:
+mov si, offset catmessage
+call print
+jmp beginPlay
 
 end_prog:
 mov ah,4ch
@@ -274,7 +301,7 @@ ret
 checkValid:
 push ax
 
-call print
+
 mov ah,row
 mov al,col
 
@@ -356,7 +383,8 @@ mov al,[si]
 mov ah,3
 cmp ah,al
 je returnCheck
-;this is where we would put a reentry prompt
+mov si, offset filledPrompt
+call print
 call bInput
 returnCheck:
 pop ax
@@ -458,6 +486,8 @@ je combo2
 cmp ah,al
 jne combo2
 
+
+mov winningCombo, 0
 jmp celeb
 
 
@@ -480,6 +510,7 @@ je combo3
 cmp ah,al
 jne combo3
 
+mov winningCombo, 1
 jmp celeb
 
 
@@ -502,6 +533,7 @@ je combo4
 cmp ah,al
 jne combo4
 
+mov winningCombo, 2
 jmp celeb
 
 
@@ -524,6 +556,7 @@ je combo5
 cmp ah,al
 jne combo5
 
+mov winningCombo, 3
 jmp celeb
 
 
@@ -546,6 +579,7 @@ je combo6
 cmp ah,al
 jne combo6
 
+mov winningCombo, 4
 jmp celeb
 
 
@@ -568,6 +602,7 @@ je combo7
 cmp ah,al
 jne combo7
 
+mov winningCombo, 5
 jmp celeb
 
 
@@ -590,6 +625,7 @@ je combo8
 cmp ah,al
 jne combo8
 
+mov winningCombo, 6
 jmp celeb
 
 
@@ -612,6 +648,7 @@ je checkwinR ;?
 cmp ah,al
 jne checkwinR                                ;?
 
+mov winningCombo, 7
 jmp celeb
 
 
@@ -625,15 +662,249 @@ celebrate:
 mov si,offset win
 call print
 
-mov cx,50
-Loopy:
-mov al,led0
-not led0
-mov led0,al
-call outputBoard
-loop Loopy
+mov al,activeP
+cmp al,0
+jne YellowWin
 
-jmp end_prog
+mov si,offset GreenStorage
+jmp printing
+
+YellowWin:
+mov si,offset YellowStorage
+
+printing:
+call print
+
+mov cx,25
+
+
+mov al,winningCombo
+cmp al,0
+jne wincombo1
+
+loop1:
+mov si, offset led0
+call SetPlayer
+mov si, offset led1
+call SetPlayer
+mov si,offset led2
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led0,3
+mov led1,3
+mov led2,3
+
+call outputBoard
+call delay
+loop loop1
+jmp beginPlay
+
+wincombo1:
+cmp al,1
+jne wincombo2
+loop2:
+mov si, offset led3
+call SetPlayer
+mov si, offset led4
+call SetPlayer
+mov si,offset led5
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led3,3
+mov led4,3
+mov led5,3
+
+call outputBoard
+call delay
+loop loop2
+jmp beginPlay
+
+wincombo2:
+cmp al,2
+jne wincombo3
+
+loop3:
+mov si, offset led6
+call SetPlayer
+mov si, offset led7
+call SetPlayer
+mov si, offset led8
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led6,3
+mov led7,3
+mov led8,3
+
+call outputBoard
+call delay
+loop loop3
+jmp beginPlay
+
+wincombo3:
+cmp al,3
+jne wincombo4
+
+loop4:
+mov si, offset led0
+call SetPlayer
+mov si, offset led3
+call SetPlayer
+mov si, offset led6
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led0,3
+mov led3,3
+mov led6,3
+
+call outputBoard
+call delay
+loop loop4
+jmp beginPlay
+
+wincombo4:
+cmp al,4
+jne wincombo5
+loop5:
+mov si, offset led1
+call SetPlayer
+mov si, offset led4
+call SetPlayer
+mov si, offset led7
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led1,3
+mov led4,3
+mov led7,3
+
+call outputBoard
+call delay
+loop loop5
+jmp beginPlay
+
+wincombo5:
+cmp al,5
+jne wincombo6
+loop6:
+mov si, offset led2
+call SetPlayer
+mov si, offset led5
+call SetPlayer
+mov si, offset led8
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led2,3
+mov led5,3
+mov led8,3
+
+call outputBoard
+call delay
+loop loop6
+jmp beginPlay
+
+wincombo6:
+cmp al,6
+jne wincombo7
+loop7:
+mov si, offset led0
+call SetPlayer
+mov si, offset led4
+call SetPlayer
+mov si, offset led8
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led0,3
+mov led4,3
+mov led8,3
+
+call outputBoard
+call delay
+loop loop7
+jmp beginPlay
+
+wincombo7:
+loop8:
+mov si, offset led2
+call SetPlayer
+mov si, offset led4
+call SetPlayer
+mov si, offset led6
+call SetPlayer
+
+call outputBoard 
+
+call delay
+
+mov led2,3
+mov led4,3
+mov led6,3
+
+call outputBoard
+call delay
+loop loop8
+jmp beginPlay
+
+
+
+SetPlayer:
+push ax
+mov al,activeP
+cmp al,0
+jne yellowPlayer
+
+call setLEDG
+jmp endPlayer
+
+yellowPlayer:
+call setLEDY
+
+endPlayer:
+pop ax
+ret
+
+
+delay:
+push bx
+push cx
+mov bx,5
+loop2d:
+mov cx, 0ffffh
+loop1d:
+nop
+loop loop1d
+dec bx
+jnz loop2d
+
+pop bx
+pop cx
+
 ret
 
 ;code end
