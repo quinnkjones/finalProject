@@ -143,7 +143,7 @@ mov turncount, al
 
 call checkWin
 
-mov turncount,al
+mov al,turncount
 cmp al,9
 je draw
 
