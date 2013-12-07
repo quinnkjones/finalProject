@@ -100,25 +100,25 @@ call print
 mov si, offset Green
 call print
 
-mov si, offset GreenStorage
+mov si, offset GreenStorage		;Take in the screen name of the green player
 call keyInput
 
 mov si, offset Yellow
 call print
-
-mov si, offset YellowStorage
+	
+mov si, offset YellowStorage	;Take in the screen name of the yellow player#A52A2A
 call keyInput
 
 
 
-mov activeP, 0
+mov activeP, 0  ;Makes green the first player
 call outputBoard
 mainloop:
 
-mov si, offset turn
-call print
+mov si, offset turn ;announce change of turn
+call print 
 
-mov al,activeP
+mov al,activeP ;"if statement" that prints out the appropriate screen name
 cmp al,0
 je pl1
 
@@ -131,37 +131,37 @@ mov si, offset GreenStorage
 pr:
 call print
 
-call bInput
+call bInput ;take input from the push buttons
 
-call SetPlayer
+call SetPlayer ;use input from buttons to make the correct square on the board owned by the correct player
 
-call outputBoard
+call outputBoard ;output the changes made in this turn
 
-mov al,turncount
+mov al,turncount ;increment the count of turns
 inc al
 mov turncount, al
 
-call checkWin
+call checkWin ;see if anyone won
 
-mov al,turncount
+mov al,turncount ;see if all the spaces have been taken
 cmp al,9
-je draw
+je draw ;must have been a draw then
 
-mov al,activeP
+mov al,activeP	;change the active player and take a new turn
 not al
 mov activeP,al
 jmp mainloop
 
 draw:
-mov si, offset catmessage
+mov si, offset catmessage ;print that there was a draw and then startover
 call print
 jmp beginPlay
 
-end_prog:
+end_prog: ;seperates the main loop from subroutines in case the program tries to run lose
 mov ah,4ch
 int 21h
 
-print:
+print: ;prints out a message copied from old labs
 
 push si
 push dx
@@ -187,7 +187,7 @@ pop dx
 pop si
 ret
 
-keyInput:
+keyInput: ;takes keyboard input and stores it in a buffer also taken from old lab work.
 
 push cx
 push ax
@@ -211,46 +211,46 @@ pop ax
 pop cx
 ret
 
-bInput:
+bInput: ;uses input from the buttons
 push dx
 push ax
-mov dx,142h
+mov dx,142h ;port number for port c
 rowloop:
-in al,dx
-and ax,0ffh
-mov ah,0
-shr ax,1
+in al,dx  
+and ax,0ffh ;solidify the input from c
+mov ah,0 
+shr ax,1 ;eliminates the values of b0 and b1 since they are outputs and we weren't sure how inputing from an output works
 shr ax,1
 
-mov ah,2
+mov ah,2 ;used to print al to the dos prompt for debugging
 
 mov dl,al
 ;int 21h
 mov dl," "
 ;int 21h
 mov dx,142h
-cmp al,3eh ;lowest row button
+cmp al,3eh ; compare to the lowest row button
 jne secondcmp
 
-mov row,0
+mov row,0 ;assign row variable for later use
 jmp colloop
 
 secondcmp:
-cmp al,3dh
+cmp al,3dh ;compare to the middle row
 jne thirdcmp
 
 mov row,1
 jmp colloop
 
 thirdcmp:
-cmp al,3bh
+cmp al,3bh ;compare to the highest row
 jne rowloop
 
 mov row,2
 jmp colloop
 
 
-colloop:
+colloop: ;same procedure as the row loop but with different comparisons
 
 in al,dx
 and al,0ffh
@@ -268,11 +268,11 @@ mov dl," "
 ;int 21h
 mov dx,142h
 
-cmp al,37h ;lowest row button
+cmp al,37h ;lowest col button
 jne secondcmpc
 
 mov col,0
-call checkValid
+call checkValid ;we now have a row and column so call checkvalid to see if this space is usable
 jmp return
 
 
@@ -298,14 +298,14 @@ pop dx
 ret
 ;SI holds offset of LED that should change
 
-checkValid:
+checkValid: ;checks whether a square is available
 push ax
 
 
 mov ah,row
 mov al,col
 
-cmp ah,0
+cmp ah,0 ;given a row number and a column number decode that into an led index
 je row0
 
 cmp ah,1
@@ -345,7 +345,7 @@ row2:
         je l8
         
 l0:
-        mov si, offset led0
+        mov si, offset led0 ;mov led variable into si so it can be referenced later
         jmp end_check
 
 l1:
@@ -379,48 +379,48 @@ l8:
         jmp end_check
         
 end_check:
-mov al,[si]
+mov al,[si] ;check if the square is empty
 mov ah,3
 cmp ah,al
 je returnCheck
-mov si, offset filledPrompt
+mov si, offset filledPrompt ;it wasn't empty so we'll print that out and force the player to input a different one
 call print
 call bInput
-returnCheck:
-pop ax
+returnCheck: ;it was empty so skip calling binput again and return all the way back to mainloop
+pop ax 
 ret
 
-setLEDG:
+setLEDG: ;sets the value of the led pointed to by SI with a value indicating green owns it
 push ax
 mov al,00000010b
 mov [SI], al
 pop ax
 ret
 
-setLEDY:
+setLEDY: sets the value of the led pointed to by SI witha value indicating yellow owns it
 push ax
 mov al,  00000001b
 mov [SI],al
 pop ax 
 ret
 
-outputBoard:
+outputBoard: ;uses the led variables to output the board configuration
 push ax
 push bx
 push dx
 
 mov ax, 0
-mov al, led0
+mov al, led0 ;put the first square into the b0 and b1
 mov bl, led1
 shl bx,1
 shl bx,1
-or al,bl
+or al,bl  ;puts the second square into b2 and b3 
 mov bl, led2
 shl bx,1
 shl bx,1
 shl bx,1
 shl bx,1
-or al,bl
+or al,bl ;and so on
 mov bl,led3
 shl bx,1
 shl bx,1
@@ -430,9 +430,9 @@ shl bx,1
 shl bx,1
 or al,bl
 mov dx, 140h
-out dx,al
+out dx,al ;outputs the first four squares of the board
 
-mov ax, 0
+mov ax, 0 
 mov al, led4
 mov bl,led5
 shl bx,1
@@ -465,32 +465,33 @@ pop bx
 pop ax
 ret
 
-checkWin:
+checkWin: ;checks if the playing board is in a won state by checking every possible winning combination
 push ax
 
-mov al,led0
+
+mov al,led0 ;check if any square in the combo are empty and skip the rest
 cmp al,3
 je combo2
 
-mov ah, led1
+mov ah, led1 ;check if this square is not zero and equal to the "first" in the series
 cmp ah,3
 je combo2
 
 cmp ah,al
 jne combo2
 
-mov ah,led2
+mov ah,led2 ;check if this square is not zero and equal to the "first" and by extension the "second" in the series
 cmp ah,3
 je combo2
 
 cmp ah,al
 jne combo2
 
-
-mov winningCombo, 0
+;the only way we get here is if all three in this winning combination are held by the same player
+mov winningCombo, 0 ;index to denote with combination was triggered for later use
 jmp celeb
 
-
+; and so on for every possible combination
 combo2:
 mov al,led3
 cmp al,3
@@ -632,37 +633,37 @@ jmp celeb
 combo8:
 mov al,led2
 cmp al,3
-je checkwinR                                ;binput?
+je checkwinR ;jumps to the return statement as this is the last combo and no one has one yet apparently
 
 mov ah, led4
 cmp ah,3
-je checkwinR                        ;?
+je checkwinR                        
 
 cmp ah,al
-jne checkwinR                        ;?
+jne checkwinR                        
 
 mov ah,led6
 cmp ah,3
-je checkwinR ;?
+je checkwinR 
 
 cmp ah,al
-jne checkwinR                                ;?
+jne checkwinR                                
 
 mov winningCombo, 7
 jmp celeb
 
 
 celeb:
-call celebrate
-checkwinR:
+call celebrate ;someone has won so we need to celebrate that
+checkwinR: ;no one has won so we need to keep going
 pop ax
 ret
 
-celebrate:
-mov si,offset win
+celebrate: ;celebrates a win
+mov si,offset win ;print out a message indicating winning
 call print
 
-mov al,activeP
+mov al,activeP ;print out the screen name of the winner based on the value of the active player from the last turn
 cmp al,0
 jne YellowWin
 
@@ -678,30 +679,32 @@ call print
 mov cx,25
 
 
-mov al,winningCombo
+mov al,winningCombo  ;decode to a different celebration loop for every possible winning combination
 cmp al,0
 jne wincombo1
 
-loop1:
-mov si, offset led0
+loop1: ;loop for winning combination #0
+mov si, offset led0 ;turn the led's in this combo to the color of the player who won
 call SetPlayer
 mov si, offset led1
 call SetPlayer
 mov si,offset led2
 call SetPlayer
 
-call outputBoard 
+call outputBoard ;output that
 
-call delay
+call delay ; delay for about .25s
 
-mov led0,3
+mov led0,3 ;turn them all off
 mov led1,3
 mov led2,3
 
-call outputBoard
+call outputBoard ;output that and delay then do it again for 25x
 call delay
 loop loop1
-jmp beginPlay
+jmp beginPlay ;start the game over
+
+;All other cases reflect this setup
 
 wincombo1:
 cmp al,1
@@ -873,7 +876,7 @@ jmp beginPlay
 
 
 
-SetPlayer:
+SetPlayer: ;changes the led variable to reflect that a change has been made by calling setLEDG or setLEDY based on the activeP
 push ax
 mov al,activeP
 cmp al,0
@@ -890,7 +893,7 @@ pop ax
 ret
 
 
-delay:
+delay: ;delay subroutine copied from prior labs
 push bx
 push cx
 mov bx,5
